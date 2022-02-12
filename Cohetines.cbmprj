@@ -43,7 +43,6 @@
     <BuildList>
         <FileName>sidPlayer.asm</FileName>
         <FileName>main.asm</FileName>
-        <FileName>utils.asm</FileName>
         <FileName>sprites.asm</FileName>
         <FileName>const.asm</FileName>
         <FileName>mem_map.asm</FileName>
@@ -85,7 +84,7 @@
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>68,122,507,</Bookmarks>
+            <Bookmarks>91,140,525,</Bookmarks>
             <Topmost>True</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>
@@ -140,18 +139,7 @@
             <IncludeInBuild>True</IncludeInBuild>
             <Regions />
             <Breakpoints />
-            <Bookmarks>777,</Bookmarks>
-            <Topmost>False</Topmost>
-            <FileOpen>True</FileOpen>
-        </SourceFile>
-        <SourceFile>
-            <Name>utils.asm</Name>
-            <PrgName />
-            <FileType>2</FileType>
-            <IncludeInBuild>True</IncludeInBuild>
-            <Regions />
-            <Breakpoints />
-            <Bookmarks />
+            <Bookmarks>795,</Bookmarks>
             <Topmost>False</Topmost>
             <FileOpen>True</FileOpen>
         </SourceFile>

@@ -1,3 +1,20 @@
+; Cohetines!
+; Yet another Commodore 64 game developed in 2022
+;    Copyright (C) 2022  pgonzal@gmail.com
+;
+;    This program is free software: you can redistribute it and/or modify
+;    it under the terms of the GNU General Public License as published by
+;    the Free Software Foundation, either version 3 of the License, or
+;    (at your option) any later version.
+;
+;    This program is distributed in the hope that it will be useful,
+;    but WITHOUT ANY WARRANTY; without even the implied warranty of
+;    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;    GNU General Public License for more details.
+;
+;    You should have received a copy of the GNU General Public License
+;    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 
 incasm "const.asm"      ; Include constats definitions
 incasm "mem_map.asm"    ; Include memory map tags definitions  
@@ -38,7 +55,13 @@ defm copy1KMem
         bne @next_byte
 endm
 
-
+defm waitForKey
+@loop_wait_for_key
+        jsr SCNKEY      ; check_keypress
+        jsr GETIN       ; read keyboard buffer
+        cmp #/1         ; key check
+        bne @loop_wait_for_key
+endm
 
 ; Global variables (pointer defined by constants)
 flag_frame_arrived      = $C000
@@ -68,12 +91,8 @@ global_setup
         jsr setup_raster_IRQ    ; raster interrupt setup
         jsr show_intro          ; intro screen
         jsr music_player        ; music initialize rutine
-        
-loop_intro
-        jsr SCNKEY      ; check_keypress
-        jsr GETIN       ; read keyboard buffer
-        cmp #$20        ; spacebar_check
-        bne loop_intro
+     
+        waitForKey $20          ; wait for space bar
 
         ; Wait for frame arrived signal to avoid screen flicker 
         lda #0
@@ -83,13 +102,9 @@ loop_intro
         bne @wait_ri
 
         jsr show_help_screen
-@loop_help_screen
-        jsr SCNKEY      ; check_keypress
-        jsr GETIN       ; read keyboard buffer
-        cmp #$20        ; spacebar_check
-        bne @loop_help_screen
+        waitForKey $20  ; wait for space key
 
-@game_initialize
+game_initialize
         jsr sc_setup
         jsr sp_setup
 
@@ -113,9 +128,12 @@ main_loop
         lda explosion_delay        
         bne main_loop
         lda flag_endgame 
-        beq main_loop   
+        beq main_loop          
 
-        jsr new_game
+        ; Game over!
+        jsr show_end_game_screen
+        waitForKey $20          ; wait for space bar
+        jmp game_initialize
         
         jmp main_loop
 
@@ -715,6 +733,46 @@ irq
 
         jmp $ea81       ; restore registers from stack
 
+; ******************************************************************************
+; Screen setup
+show_end_game_screen
+        ; Enter text mode
+        lda #$1B
+        sta $D011
+
+        ; Disable multicolor mode
+        lda #%11001000
+        sta SCROLX
+
+        ; Define default charset address 
+        lda #$16
+        sta VMCSB
+
+        ; Define colors
+        lda #black
+        sta BGCOL0
+        sta EXTCOL
+
+        ; Disable Sprites
+        lda #0
+        sta sp_flag_visible        
+
+        ; Clear screen
+        jsr $E544
+        
+        ; Set cursor
+        ldx #5
+        ldy #0
+        jsr $E50C
+
+        ; Print string
+        lda #<string10
+        ldy #>string10
+        jsr $AB1E
+        lda #<string11
+        ldy #>string11
+        jsr $AB1E
+        rts     
 
 ; ******************************************************************************
 ; Help screen
@@ -793,14 +851,28 @@ string3
         TEXT "PULSA ESPACIO PARA INICIAR Y SUERTE CON LA PUNTERIA!"
         BYTE 0
 string10
-        TEXT "PERDISTE .... JURUJUJAJA"
-        TEXT "JUGAMOS DE NUEVO (S/N)"
-        TEXT "GRACIAS POR JUGAR COHETINES"
+        BYTE 155
+        TEXT "        PERDISTE .... JURUJUJAJA"
+        BYTE 13
+        TEXT "       GRACIAS POR JUGAR COHETINES"
+        ;     0123456789012345678901234567890123456789
+        BYTE 13,13,13,13 
+        BYTE 154       
         TEXT "CUIDADO CON LA PIROTECNIA"
+        BYTE 13 
         TEXT "ABRAZA A TU ABUELITA"
-        TEXT "ACARICIA A TU GATITO"
+        BYTE 13 
+        TEXT "ACARICIA A TU GATITO ..."
+        BYTE 0
+string11
+        BYTE 13,13
         TEXT "Y SOBRE TODO CUIDA A FURRET"
+        BYTE 13 
         TEXT "TAMBIEN A PIKACHU Y A DARWIN"
+        BYTE 13,13,13,13
+        BYTE 28
+        TEXT "PRESIONA ESPACIO PARA JUGAR DE NUEVO!"
+        BYTE 0
 
 
 ; Screen labels
